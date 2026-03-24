@@ -44,24 +44,14 @@ function getFilteredVideos() {
 function queueFacebookParse(target, onDone) {
   if (!target) return;
 
-  const runParse = () => {
-    if (window.FB && window.FB.XFBML) {
-      window.FB.XFBML.parse(target, () => {
-        if (typeof onDone === "function") onDone();
-      });
-      setTimeout(() => {
-        if (typeof onDone === "function") onDone();
-      }, 350);
-      setTimeout(() => {
-        if (typeof onDone === "function") onDone();
-      }, 900);
-      return true;
-    }
-    return false;
+  const runDone = () => {
+    if (typeof onDone === "function") onDone();
   };
 
-  if (window.fbSdkReady) {
-    runParse();
+  if (window.fbSdkReady && window.FB && window.FB.XFBML) {
+    window.FB.XFBML.parse(target, runDone);
+    setTimeout(runDone, 350);
+    setTimeout(runDone, 900);
     return;
   }
 
@@ -207,7 +197,7 @@ function renderVideos() {
   });
 }
 
-function createDesktopEmbedMarkup(video, width = 520) {
+function createEmbedMarkup(video, width = 520) {
   return `
     <div class="embed-fit-stage">
       <div class="embed-fit-center">
@@ -223,25 +213,6 @@ function createDesktopEmbedMarkup(video, width = 520) {
             </a>
           </blockquote>
         </div>
-      </div>
-    </div>
-  `;
-}
-
-function createMobileEmbedMarkup(video, width = 340) {
-  return `
-    <div class="embed-mobile-stage">
-      <div
-        class="fb-video"
-        data-href="${video.fbUrl}"
-        data-width="${width}"
-        data-show-text="false"
-        data-allowfullscreen="true">
-        <blockquote cite="${video.fbUrl}" class="fb-xfbml-parse-ignore">
-          <a href="${video.fbUrl}" target="_blank" rel="noopener noreferrer">
-            ভিডিও দেখুন
-          </a>
-        </blockquote>
       </div>
     </div>
   `;
@@ -272,7 +243,7 @@ function renderPreview() {
   const mount = document.getElementById("desktopEmbedMount");
   const embedWidth = getEmbedWidth(mount, 520);
 
-  mount.innerHTML = createDesktopEmbedMarkup(video, embedWidth);
+  mount.innerHTML = createEmbedMarkup(video, embedWidth);
   queueFacebookParse(mount, () => fitEmbedContent(mount));
 }
 
@@ -304,24 +275,13 @@ function openMobileModal() {
   document.body.classList.add("overflow-hidden");
 
   const mount = document.getElementById("mobileEmbedMount");
-  const embedWidth = Math.max(280, Math.min(420, window.innerWidth - 48));
+  const embedWidth = getEmbedWidth(mount, 340);
 
-  mount.innerHTML = createMobileEmbedMarkup(video, embedWidth);
-
-  const panel = videoModal.querySelector(".modal-panel");
-  panel.addEventListener("click", stopModalInnerClick, true);
-
-  queueFacebookParse(mount);
-}
-
-function stopModalInnerClick(event) {
-  event.stopPropagation();
+  mount.innerHTML = createEmbedMarkup(video, embedWidth);
+  queueFacebookParse(mount, () => fitEmbedContent(mount));
 }
 
 function closeModal() {
-  const panel = videoModal.querySelector(".modal-panel");
-  panel.removeEventListener("click", stopModalInnerClick, true);
-
   videoModal.classList.add("hidden");
   videoModal.classList.remove("flex");
   videoModal.setAttribute("aria-hidden", "true");
@@ -380,7 +340,10 @@ async function loadData() {
 
 function refitVisibleEmbeds() {
   const desktopMount = document.getElementById("desktopEmbedMount");
+  const mobileMount = document.getElementById("mobileEmbedMount");
+
   fitEmbedContent(desktopMount);
+  fitEmbedContent(mobileMount);
 }
 
 searchInput.addEventListener("input", () => {
@@ -392,7 +355,10 @@ searchInput.addEventListener("input", () => {
   }
 });
 
-closeModalBtn.addEventListener("click", closeModal);
+closeModalBtn.addEventListener("click", (event) => {
+  event.stopPropagation();
+  closeModal();
+});
 
 videoModal.addEventListener("click", (event) => {
   if (event.target === videoModal) {
@@ -411,12 +377,7 @@ window.addEventListener("resize", () => {
 
   state.resizeTicking = true;
   requestAnimationFrame(() => {
-    if (!isMobileView()) {
-      closeModal();
-      renderPreview();
-    } else {
-      refitVisibleEmbeds();
-    }
+    refitVisibleEmbeds();
     state.resizeTicking = false;
   });
 });
