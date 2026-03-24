@@ -473,12 +473,11 @@ function renderNotices() {
   const noticeTrack = document.getElementById("noticeTrack");
   if (!noticeTrack) return;
 
-  const noticeHtml = notices.map((item) => `<span>📢 ${item}</span>`).join("");
-  noticeTrack.innerHTML = noticeHtml + noticeHtml;
+  const singleSet = notices
+    .map((item) => `<span>📢 ${item}</span>`)
+    .join("");
+
+  /* seamless scroll এর জন্য 2 বার */
+  noticeTrack.innerHTML = singleSet + singleSet;
 }
 
-window.addEventListener("load", () => {
-  renderNotices();
-});
-
-window.addEventListener("load", loadData);
