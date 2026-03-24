@@ -308,4 +308,129 @@ body {
     min-height: 320px;
     height: calc(100dvh - 330px);
   }
+  .premium-notice-bar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 18px;
+  background: linear-gradient(90deg, #0f172a 0%, #111827 100%);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
+  margin-top: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.premium-notice-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 2;
+  box-shadow: 6px 0 16px rgba(220, 38, 38, 0.18);
+}
+
+.premium-live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.8);
+  animation: premiumPulse 1.4s infinite;
+}
+
+@keyframes premiumPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.premium-notice-right {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.premium-notice-marquee {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.premium-notice-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: premiumTicker 28s linear infinite;
+}
+
+.premium-notice-track span {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 42px;
+  color: #f8fafc;
+  font-size: 0.95rem;
+  font-weight: 500;
+  position: relative;
+}
+
+.premium-notice-track span::after {
+  content: "•";
+  color: #f87171;
+  margin-left: 18px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+@keyframes premiumTicker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Hover করলে stop হবে */
+.premium-notice-marquee:hover .premium-notice-track {
+  animation-play-state: paused;
+}
+
+@media (max-width: 767px) {
+  .premium-notice-left {
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    gap: 8px;
+  }
+
+  .premium-live-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .premium-notice-track span {
+    font-size: 0.86rem;
+    margin-right: 30px;
+  }
+
+  .premium-notice-track span::after {
+    margin-left: 12px;
+  }
+}
 }
