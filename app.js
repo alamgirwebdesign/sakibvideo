@@ -461,5 +461,24 @@ window.addEventListener("orientationchange", () => {
   setTimeout(refitVisibleEmbeds, 200);
   setTimeout(reparseVisibleEmbeds, 500);
 });
+const notices = [
+  "নতুন বাংলা ব্যাকরণ ভিডিও আপলোড করা হয়েছে",
+  "ইংরেজি tense এর নতুন tutorial এখন লাইভ",
+  "গণিত শর্টকাট সিরিজ দ্রুত যোগ করা হবে",
+  "কম্পিউটার বেসিক ভিডিও নিয়মিত আপডেট করা হচ্ছে",
+  "সর্বশেষ ভিডিও দেখতে ক্যাটাগরি থেকে নির্বাচন করুন"
+];
+
+function renderNotices() {
+  const noticeTrack = document.getElementById("noticeTrack");
+  if (!noticeTrack) return;
+
+  const noticeHtml = notices.map((item) => `<span>📢 ${item}</span>`).join("");
+  noticeTrack.innerHTML = noticeHtml + noticeHtml;
+}
+
+window.addEventListener("load", () => {
+  renderNotices();
+});
 
 window.addEventListener("load", loadData);
