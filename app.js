@@ -481,3 +481,4 @@ function renderNotices() {
   noticeTrack.innerHTML = singleSet + singleSet;
 }
 
+window.addEventListener("load", loadData);
