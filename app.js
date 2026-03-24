@@ -1,385 +1,311 @@
-const state = {
-  data: [],
-  activeCategory: "",
-  activeVideoIndex: 0,
-  pendingParseTargets: [],
-  resizeTicking: false
-};
-
-const categoryList = document.getElementById("categoryList");
-const videoList = document.getElementById("videoList");
-const previewBox = document.getElementById("previewBox");
-const searchInput = document.getElementById("searchInput");
-const videoCount = document.getElementById("videoCount");
-const videoModal = document.getElementById("videoModal");
-const modalContent = document.getElementById("modalContent");
-const closeModalBtn = document.getElementById("closeModalBtn");
-
-function isMobileView() {
-  return window.innerWidth < 1280;
+:root {
+  --button-bg: #727b8d;
+  --button-active: #071634;
+  --border: #dbe4f0;
+  --text-dark: #0f172a;
+  --text-soft: #64748b;
+  --sidebar-top-space: 92px;
 }
 
-function escapeHtml(text = "") {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
+* {
+  box-sizing: border-box;
 }
 
-function getCurrentCategoryObject() {
-  return state.data.find((item) => item.category === state.activeCategory) || null;
+html {
+  scroll-behavior: smooth;
 }
 
-function getFilteredVideos() {
-  const currentCategory = getCurrentCategoryObject();
-  if (!currentCategory) return [];
-
-  const searchText = searchInput.value.trim().toLowerCase();
-
-  return currentCategory.videos.filter((video) => {
-    const combined = `${video.title} ${video.description || ""}`.toLowerCase();
-    return combined.includes(searchText);
-  });
+body {
+  font-family: "Hind Siliguri", sans-serif;
+  background: #f1f5f9;
+  margin: 0;
 }
 
-function queueFacebookParse(target, onDone) {
-  if (!target) return;
+/* Category buttons */
+.category-btn {
+  border: 0;
+  border-radius: 18px;
+  background: var(--button-bg);
+  color: #fff;
+  padding: 16px 14px;
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.2;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
 
-  const runDone = () => {
-    if (typeof onDone === "function") onDone();
-  };
+.category-btn:hover {
+  transform: translateY(-1px);
+}
 
-  if (window.fbSdkReady && window.FB && window.FB.XFBML) {
-    window.FB.XFBML.parse(target, runDone);
-    setTimeout(runDone, 350);
-    setTimeout(runDone, 900);
-    return;
+.category-btn.active {
+  background: var(--button-active);
+  box-shadow: 0 10px 24px rgba(7, 22, 52, 0.2);
+}
+
+/* Sidebar */
+.sidebar-shell {
+  position: sticky;
+  top: var(--sidebar-top-space);
+}
+
+.video-list-scroll {
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.video-list-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.video-list-scroll::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.18);
+  border-radius: 999px;
+}
+
+/* Video card */
+.video-card {
+  width: 100%;
+  border: 1.5px solid rgba(15, 23, 42, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 16px 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: 0.2s ease;
+}
+
+.video-card:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.video-card.active-video {
+  background: #eef2ff;
+  border-color: rgba(7, 22, 52, 0.75);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.video-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--text-dark);
+}
+
+/* Preview */
+.preview-shell {
+  min-height: calc(100vh - 115px);
+}
+
+.preview-box {
+  min-height: calc(100vh - 160px);
+}
+
+.preview-empty {
+  display: grid;
+  min-height: calc(100vh - 180px);
+  place-items: center;
+  border-radius: 24px;
+  background: #f8fafc;
+  text-align: center;
+  color: var(--text-soft);
+  padding: 20px;
+}
+
+.preview-layout {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 18px;
+  min-height: calc(100vh - 170px);
+}
+
+.player-area {
+  border-radius: 24px;
+  overflow: hidden;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  padding: 12px;
+  min-height: 420px;
+}
+
+.player-embed-wrap {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 260px);
+  height: calc(100vh - 260px);
+  border-radius: 20px;
+  overflow: hidden;
+  background: #000;
+}
+
+.embed-fit-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.embed-fit-center {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform-origin: top center;
+  will-change: transform;
+}
+
+.fb-video,
+.fb-post {
+  min-width: 280px;
+  max-width: 100%;
+}
+
+.embed-fit-center > div,
+.embed-fit-center iframe {
+  max-width: none !important;
+}
+
+.player-info {
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+  padding: 18px 20px;
+}
+
+.player-info-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.player-badge {
+  display: inline-block;
+  border-radius: 999px;
+  background: #efe9ff;
+  color: #6d46d6;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.player-title {
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  line-height: 1.2;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.player-desc {
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+/* Modal */
+.modal-panel {
+  animation: modalUp 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes modalUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
   }
-
-  state.pendingParseTargets.push({ target, onDone });
-}
-
-window.onFacebookSdkReady = function () {
-  while (state.pendingParseTargets.length) {
-    const item = state.pendingParseTargets.shift();
-    if (!item || !item.target) continue;
-
-    if (window.FB && window.FB.XFBML) {
-      window.FB.XFBML.parse(item.target, () => {
-        if (typeof item.onDone === "function") item.onDone();
-      });
-      setTimeout(() => {
-        if (typeof item.onDone === "function") item.onDone();
-      }, 350);
-      setTimeout(() => {
-        if (typeof item.onDone === "function") item.onDone();
-      }, 900);
-    }
-  }
-};
-
-function getEmbedWidth(container, fallback = 520) {
-  if (!container) return fallback;
-
-  const containerWidth = Math.floor(container.clientWidth || fallback);
-  const containerHeight = Math.floor(container.clientHeight || 0);
-
-  const portraitSafeWidth = containerHeight > 0
-    ? Math.floor((containerHeight * 9) / 16)
-    : fallback;
-
-  const bestWidth = Math.min(containerWidth - 24, portraitSafeWidth || containerWidth - 24);
-  return Math.max(280, bestWidth);
-}
-
-function fitEmbedContent(target) {
-  if (!target) return;
-
-  const stage = target.querySelector(".embed-fit-stage");
-  const center = target.querySelector(".embed-fit-center");
-  if (!stage || !center) return;
-
-  const injectedRoot = center.firstElementChild;
-  if (!injectedRoot) return;
-
-  const stageRect = stage.getBoundingClientRect();
-  if (!stageRect.width || !stageRect.height) return;
-
-  const contentWidth = injectedRoot.offsetWidth || injectedRoot.scrollWidth || 0;
-  const contentHeight = injectedRoot.offsetHeight || injectedRoot.scrollHeight || 0;
-  if (!contentWidth || !contentHeight) return;
-
-  const scale = Math.min(
-    stageRect.width / contentWidth,
-    stageRect.height / contentHeight
-  );
-
-  center.style.width = `${contentWidth}px`;
-  center.style.height = `${contentHeight}px`;
-  center.style.transform = `translateX(-50%) scale(${scale})`;
-}
-
-function renderCategories() {
-  categoryList.innerHTML = "";
-
-  state.data.forEach((item) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "category-btn";
-    btn.textContent = item.category;
-
-    if (item.category === state.activeCategory) {
-      btn.classList.add("active");
-    }
-
-    btn.addEventListener("click", () => {
-      state.activeCategory = item.category;
-      state.activeVideoIndex = 0;
-      renderAll();
-    });
-
-    categoryList.appendChild(btn);
-  });
-}
-
-function renderVideos() {
-  const filteredVideos = getFilteredVideos();
-  videoList.innerHTML = "";
-  videoCount.textContent = `${filteredVideos.length} টি`;
-
-  if (state.activeVideoIndex >= filteredVideos.length) {
-    state.activeVideoIndex = 0;
-  }
-
-  if (!filteredVideos.length) {
-    videoList.innerHTML = `
-      <div class="rounded-xl bg-white/70 p-4 text-sm text-slate-700">
-        কোনো ভিডিও পাওয়া যায়নি।
-      </div>
-    `;
-
-    previewBox.innerHTML = `
-      <div class="preview-empty">
-        <div>
-          <div class="mb-3 text-5xl">🔍</div>
-          <h3 class="text-xl font-bold text-slate-900">কোনো ভিডিও পাওয়া যায়নি</h3>
-          <p class="mt-2 text-slate-500">অন্য keyword লিখে আবার search করুন</p>
-        </div>
-      </div>
-    `;
-    return;
-  }
-
-  filteredVideos.forEach((video, index) => {
-    const card = document.createElement("button");
-    card.type = "button";
-    card.className = "video-card";
-
-    if (index === state.activeVideoIndex) {
-      card.classList.add("active-video");
-    }
-
-    card.innerHTML = `
-      <div class="video-card-title line-clamp-2 line-clamp-title">${escapeHtml(video.title)}</div>
-    `;
-
-    card.addEventListener("click", () => {
-      state.activeVideoIndex = index;
-      renderVideos();
-
-      if (isMobileView()) {
-        openMobileModal();
-      } else {
-        renderPreview();
-      }
-    });
-
-    videoList.appendChild(card);
-  });
-}
-
-function createEmbedMarkup(video, width = 520) {
-  return `
-    <div class="embed-fit-stage">
-      <div class="embed-fit-center">
-        <div
-          class="fb-video"
-          data-href="${video.fbUrl}"
-          data-width="${width}"
-          data-show-text="false"
-          data-allowfullscreen="true">
-          <blockquote cite="${video.fbUrl}" class="fb-xfbml-parse-ignore">
-            <a href="${video.fbUrl}" target="_blank" rel="noopener noreferrer">
-              ভিডিও দেখুন
-            </a>
-          </blockquote>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderPreview() {
-  const filteredVideos = getFilteredVideos();
-  if (!filteredVideos.length) return;
-
-  const video = filteredVideos[state.activeVideoIndex];
-
-  previewBox.innerHTML = `
-    <div class="preview-layout">
-      <div class="player-area">
-        <div class="player-embed-wrap" id="desktopEmbedMount"></div>
-      </div>
-
-      <div class="player-info">
-        <div class="player-info-top">
-          <span class="player-badge">${escapeHtml(state.activeCategory)}</span>
-          <h2 class="player-title">${escapeHtml(video.title)}</h2>
-        </div>
-        <p class="player-desc">${escapeHtml(video.description || "")}</p>
-      </div>
-    </div>
-  `;
-
-  const mount = document.getElementById("desktopEmbedMount");
-  const embedWidth = getEmbedWidth(mount, 520);
-
-  mount.innerHTML = createEmbedMarkup(video, embedWidth);
-  queueFacebookParse(mount, () => fitEmbedContent(mount));
-}
-
-function openMobileModal() {
-  const filteredVideos = getFilteredVideos();
-  if (!filteredVideos.length) return;
-
-  const video = filteredVideos[state.activeVideoIndex];
-
-  modalContent.innerHTML = `
-    <div class="modal-layout">
-      <div class="modal-player-wrap">
-        <div class="modal-player-inner" id="mobileEmbedMount"></div>
-      </div>
-
-      <div class="player-info">
-        <div class="player-info-top">
-          <span class="player-badge">${escapeHtml(state.activeCategory)}</span>
-          <h2 class="player-title">${escapeHtml(video.title)}</h2>
-        </div>
-        <p class="player-desc">${escapeHtml(video.description || "")}</p>
-      </div>
-    </div>
-  `;
-
-  videoModal.classList.remove("hidden");
-  videoModal.classList.add("flex");
-  videoModal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("overflow-hidden");
-
-  const mount = document.getElementById("mobileEmbedMount");
-  const embedWidth = getEmbedWidth(mount, 340);
-
-  mount.innerHTML = createEmbedMarkup(video, embedWidth);
-  queueFacebookParse(mount, () => fitEmbedContent(mount));
-}
-
-function closeModal() {
-  videoModal.classList.add("hidden");
-  videoModal.classList.remove("flex");
-  videoModal.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("overflow-hidden");
-
-  modalContent.innerHTML = `
-    <div class="preview-empty min-h-[320px]">
-      <div>
-        <div class="mb-3 text-5xl">🎬</div>
-        <p class="text-slate-500">এখানে ভিডিও লোড হবে</p>
-      </div>
-    </div>
-  `;
-}
-
-function renderAll() {
-  renderCategories();
-  renderVideos();
-
-  if (!isMobileView()) {
-    renderPreview();
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-async function loadData() {
-  try {
-    const response = await fetch("./videos.json", { cache: "no-store" });
+.modal-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: calc(94dvh - 72px);
+}
 
-    if (!response.ok) {
-      throw new Error("ভিডিও ডাটা লোড করা যায়নি");
-    }
+.modal-layout {
+  display: grid;
+  gap: 16px;
+}
 
-    const json = await response.json();
-    state.data = Array.isArray(json.categories) ? json.categories : [];
+.modal-player-wrap {
+  border-radius: 24px;
+  overflow: hidden;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  padding: 10px;
+}
 
-    if (!state.data.length) {
-      throw new Error("কোনো category পাওয়া যায়নি");
-    }
+.modal-player-inner {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #000;
+  min-height: 360px;
+  height: calc(100dvh - 210px);
+}
 
-    state.activeCategory = state.data[0].category;
-    state.activeVideoIndex = 0;
-    renderAll();
-  } catch (error) {
-    previewBox.innerHTML = `
-      <div class="preview-empty">
-        <div>
-          <div class="mb-3 text-5xl">⚠️</div>
-          <h3 class="text-2xl font-bold text-slate-900">ডাটা লোড হয়নি</h3>
-          <p class="mt-2 text-slate-500">${escapeHtml(error.message)}</p>
-          <p class="mt-2 text-slate-500">Live Server / localhost / Vercel দিয়ে চালান।</p>
-        </div>
-      </div>
-    `;
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-title {
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 1279px) {
+  .sidebar-shell {
+    position: static;
+  }
+
+  .video-list-scroll {
+    max-height: 420px;
+  }
+
+  .preview-shell {
+    display: none;
   }
 }
 
-function refitVisibleEmbeds() {
-  const desktopMount = document.getElementById("desktopEmbedMount");
-  const mobileMount = document.getElementById("mobileEmbedMount");
+@media (max-width: 767px) {
+  .category-btn {
+    padding: 14px 10px;
+    font-size: 0.98rem;
+  }
 
-  fitEmbedContent(desktopMount);
-  fitEmbedContent(mobileMount);
+  .video-card {
+    padding: 14px 12px;
+  }
+
+  .video-card-title {
+    font-size: 0.96rem;
+  }
+
+  .player-desc {
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  .modal-scroll {
+    max-height: calc(94dvh - 76px);
+  }
+
+  .modal-player-inner {
+    min-height: 320px;
+    height: calc(100dvh - 180px);
+  }
+
+  .player-embed-wrap {
+    min-height: 320px;
+    height: calc(100dvh - 330px);
+  }
 }
-
-searchInput.addEventListener("input", () => {
-  state.activeVideoIndex = 0;
-  renderVideos();
-
-  if (!isMobileView()) {
-    renderPreview();
-  }
-});
-
-closeModalBtn.addEventListener("click", (event) => {
-  event.stopPropagation();
-  closeModal();
-});
-
-videoModal.addEventListener("click", (event) => {
-  if (event.target === videoModal) {
-    closeModal();
-  }
-});
-
-window.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !videoModal.classList.contains("hidden")) {
-    closeModal();
-  }
-});
-
-window.addEventListener("resize", () => {
-  if (state.resizeTicking) return;
-
-  state.resizeTicking = true;
-  requestAnimationFrame(() => {
-    refitVisibleEmbeds();
-    state.resizeTicking = false;
-  });
-});
-
-window.addEventListener("load", loadData);
