@@ -141,7 +141,6 @@ body {
   background: #000;
 }
 
-/* Both desktop and mobile use the same fitting system */
 .embed-fit-stage {
   position: absolute;
   inset: 0;
@@ -209,6 +208,8 @@ body {
 /* Modal */
 .modal-panel {
   animation: modalUp 0.25s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes modalUp {
@@ -223,6 +224,9 @@ body {
 }
 
 .modal-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   max-height: calc(94dvh - 72px);
 }
 
@@ -245,7 +249,7 @@ body {
   overflow: hidden;
   background: #000;
   min-height: 360px;
-  height: calc(94dvh - 260px);
+  height: calc(100dvh - 210px);
 }
 
 .line-clamp-2 {
@@ -296,8 +300,8 @@ body {
   }
 
   .modal-player-inner {
-    min-height: 300px;
-    height: calc(94dvh - 290px);
+    min-height: 320px;
+    height: calc(100dvh - 180px);
   }
 
   .player-embed-wrap {
