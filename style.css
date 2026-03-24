@@ -141,7 +141,7 @@ body {
   background: #000;
 }
 
-/* Desktop fit stage */
+/* Both desktop and mobile use the same fitting system */
 .embed-fit-stage {
   position: absolute;
   inset: 0;
@@ -157,15 +157,6 @@ body {
   will-change: transform;
 }
 
-/* Mobile direct stage */
-.embed-mobile-stage {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  background: #000;
-}
-
 .fb-video,
 .fb-post {
   min-width: 280px;
@@ -173,9 +164,7 @@ body {
 }
 
 .embed-fit-center > div,
-.embed-fit-center iframe,
-.embed-mobile-stage > div,
-.embed-mobile-stage iframe {
+.embed-fit-center iframe {
   max-width: none !important;
 }
 
@@ -257,9 +246,6 @@ body {
   background: #000;
   min-height: 360px;
   height: calc(94dvh - 260px);
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
 }
 
 .line-clamp-2 {
