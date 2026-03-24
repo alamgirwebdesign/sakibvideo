@@ -1,0 +1,49 @@
+{
+  "categories": [
+    {
+      "category": "বাংলা",
+      "videos": [
+        {
+          "title": "বাংলা ব্যাকরণ - কারক ও বিভক্তি",
+          "description": "সহজভাবে ব্যাখ্যা করা হয়েছে।",
+          "fbUrl": "https://www.facebook.com/reel/935645119208455/?s=fb_shorts_profile&stack_idx=0/"
+        },
+        {
+          "title": "বাংলা সাহিত্য গুরুত্বপূর্ণ প্রশ্ন",
+          "description": "পরীক্ষার প্রস্তুতির জন্য দরকারি ভিডিও।",
+          "fbUrl": "https://www.facebook.com/reel/1325340145741676/?s=fb_shorts_profile&stack_idx=0/"
+        }
+      ]
+    },
+    {
+      "category": "ইংরেজি",
+      "videos": [
+        {
+          "title": "English Grammar - Tense",
+          "description": "Tense সহজ নিয়মে শেখো।",
+          "fbUrl": "https://www.facebook.com/reel/1325340145741676/?s=fb_shorts_profile&stack_idx=0/"
+        }
+      ]
+    },
+    {
+      "category": "গণিত",
+      "videos": [
+        {
+          "title": "শতকরা অংক",
+          "description": "Shortcut সহ ব্যাখ্যা।",
+          "fbUrl": "https://www.facebook.com/facebook/videos/10153231379946729/"
+        }
+      ]
+    },
+    {
+      "category": "কম্পিউটার",
+      "videos": [
+        {
+          "title": "MS Word Basic",
+          "description": "অফিস সহকারীর জন্য গুরুত্বপূর্ণ।",
+          "fbUrl": "https://www.facebook.com/facebook/videos/10153231379946729/"
+        }
+      ]
+    }
+  ]
+}
