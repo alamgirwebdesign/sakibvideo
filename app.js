@@ -481,4 +481,7 @@ function renderNotices() {
   noticeTrack.innerHTML = singleSet + singleSet;
 }
 
-window.addEventListener("load", loadData);
+window.addEventListener("load", () => {
+  loadData();
+  renderNotices();
+});
