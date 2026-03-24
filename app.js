@@ -10,6 +10,7 @@ const categoryList = document.getElementById("categoryList");
 const videoList = document.getElementById("videoList");
 const previewBox = document.getElementById("previewBox");
 const searchInput = document.getElementById("searchInput");
+const clearSearchBtn = document.getElementById("clearSearchBtn");
 const videoCount = document.getElementById("videoCount");
 const videoModal = document.getElementById("videoModal");
 const modalContent = document.getElementById("modalContent");
@@ -25,20 +26,54 @@ function escapeHtml(text = "") {
   return div.innerHTML;
 }
 
+function getSearchText() {
+  return searchInput.value.trim().toLowerCase();
+}
+
+function hasActiveSearch() {
+  return getSearchText().length > 0;
+}
+
+function updateClearButton() {
+  if (hasActiveSearch()) {
+    clearSearchBtn.classList.remove("hidden");
+  } else {
+    clearSearchBtn.classList.add("hidden");
+  }
+}
+
 function getCurrentCategoryObject() {
   return state.data.find((item) => item.category === state.activeCategory) || null;
 }
 
 function getFilteredVideos() {
+  const searchText = getSearchText();
+
+  if (searchText) {
+    const results = [];
+
+    state.data.forEach((categoryItem) => {
+      categoryItem.videos.forEach((video) => {
+        const combined = `${video.title} ${video.description || ""}`.toLowerCase();
+        if (combined.includes(searchText)) {
+          results.push({
+            ...video,
+            matchedCategory: categoryItem.category
+          });
+        }
+      });
+    });
+
+    return results;
+  }
+
   const currentCategory = getCurrentCategoryObject();
   if (!currentCategory) return [];
 
-  const searchText = searchInput.value.trim().toLowerCase();
-
-  return currentCategory.videos.filter((video) => {
-    const combined = `${video.title} ${video.description || ""}`.toLowerCase();
-    return combined.includes(searchText);
-  });
+  return currentCategory.videos.map((video) => ({
+    ...video,
+    matchedCategory: currentCategory.category
+  }));
 }
 
 function queueFacebookParse(target, onDone) {
@@ -131,13 +166,16 @@ function renderCategories() {
     btn.className = "category-btn";
     btn.textContent = item.category;
 
-    if (item.category === state.activeCategory) {
+    if (!hasActiveSearch() && item.category === state.activeCategory) {
       btn.classList.add("active");
     }
 
     btn.addEventListener("click", () => {
       state.activeCategory = item.category;
       state.activeVideoIndex = 0;
+
+      // search active থাকলেও category click করলে
+      // list ঠিকমতো rerender হবে
       renderAll();
     });
 
@@ -161,15 +199,17 @@ function renderVideos() {
       </div>
     `;
 
-    previewBox.innerHTML = `
-      <div class="preview-empty">
-        <div>
-          <div class="mb-3 text-5xl">🔍</div>
-          <h3 class="text-xl font-bold text-slate-900">কোনো ভিডিও পাওয়া যায়নি</h3>
-          <p class="mt-2 text-slate-500">অন্য keyword লিখে আবার search করুন</p>
+    if (!isMobileView()) {
+      previewBox.innerHTML = `
+        <div class="preview-empty">
+          <div>
+            <div class="mb-3 text-5xl">🔍</div>
+            <h3 class="text-xl font-bold text-slate-900">কোনো ভিডিও পাওয়া যায়নি</h3>
+            <p class="mt-2 text-slate-500">অন্য keyword লিখে আবার search করুন</p>
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }
     return;
   }
 
@@ -182,8 +222,13 @@ function renderVideos() {
       card.classList.add("active-video");
     }
 
+    const categoryLabel = hasActiveSearch()
+      ? `<div class="mt-1 text-xs font-medium text-violet-700">${escapeHtml(video.matchedCategory || "")}</div>`
+      : "";
+
     card.innerHTML = `
       <div class="video-card-title line-clamp-2 line-clamp-title">${escapeHtml(video.title)}</div>
+      ${categoryLabel}
     `;
 
     card.addEventListener("click", () => {
@@ -227,6 +272,7 @@ function renderPreview() {
   if (!filteredVideos.length) return;
 
   const video = filteredVideos[state.activeVideoIndex];
+  const badgeCategory = video.matchedCategory || state.activeCategory;
 
   previewBox.innerHTML = `
     <div class="preview-layout">
@@ -236,7 +282,7 @@ function renderPreview() {
 
       <div class="player-info">
         <div class="player-info-top">
-          <span class="player-badge">${escapeHtml(state.activeCategory)}</span>
+          <span class="player-badge">${escapeHtml(badgeCategory)}</span>
           <h2 class="player-title">${escapeHtml(video.title)}</h2>
         </div>
         <p class="player-desc">${escapeHtml(video.description || "")}</p>
@@ -256,6 +302,7 @@ function openMobileModal() {
   if (!filteredVideos.length) return;
 
   const video = filteredVideos[state.activeVideoIndex];
+  const badgeCategory = video.matchedCategory || state.activeCategory;
 
   modalContent.innerHTML = `
     <div class="modal-layout">
@@ -265,7 +312,7 @@ function openMobileModal() {
 
       <div class="player-info">
         <div class="player-info-top">
-          <span class="player-badge">${escapeHtml(state.activeCategory)}</span>
+          <span class="player-badge">${escapeHtml(badgeCategory)}</span>
           <h2 class="player-title">${escapeHtml(video.title)}</h2>
         </div>
         <p class="player-desc">${escapeHtml(video.description || "")}</p>
@@ -304,6 +351,7 @@ function closeModal() {
 }
 
 function renderAll() {
+  updateClearButton();
   renderCategories();
   renderVideos();
 
@@ -367,11 +415,14 @@ function reparseVisibleEmbeds() {
 
 searchInput.addEventListener("input", () => {
   state.activeVideoIndex = 0;
-  renderVideos();
+  renderAll();
+});
 
-  if (!isMobileView()) {
-    renderPreview();
-  }
+clearSearchBtn.addEventListener("click", () => {
+  searchInput.value = "";
+  state.activeVideoIndex = 0;
+  renderAll();
+  searchInput.focus();
 });
 
 closeModalBtn.addEventListener("click", (event) => {
