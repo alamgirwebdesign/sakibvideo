@@ -308,33 +308,35 @@ body {
     min-height: 320px;
     height: calc(100dvh - 330px);
   }
-  .premium-notice-bar {
+  .premium-ticker {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
   display: flex;
   align-items: center;
   width: 100%;
+  min-height: 54px;
   overflow: hidden;
-  border-radius: 18px;
   background: linear-gradient(90deg, #0f172a 0%, #111827 100%);
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
-  margin-top: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.18);
 }
 
-.premium-notice-left {
+.premium-ticker-label {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  flex: 0 0 auto;
-  padding: 12px 18px;
+  min-height: 54px;
+  padding: 0 18px;
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   color: #fff;
   font-weight: 800;
-  letter-spacing: 0.5px;
   font-size: 0.92rem;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
-  position: relative;
-  z-index: 2;
-  box-shadow: 6px 0 16px rgba(220, 38, 38, 0.18);
 }
 
 .premium-live-dot {
@@ -342,7 +344,7 @@ body {
   height: 10px;
   border-radius: 999px;
   background: #fff;
-  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.75);
   animation: premiumPulse 1.4s infinite;
 }
 
@@ -358,65 +360,69 @@ body {
   }
 }
 
-.premium-notice-right {
+.premium-ticker-marquee {
   position: relative;
   flex: 1;
-  overflow: hidden;
   min-width: 0;
-}
-
-.premium-notice-marquee {
-  position: relative;
-  width: 100%;
   overflow: hidden;
-  white-space: nowrap;
+  height: 54px;
+  display: flex;
+  align-items: center;
 }
 
-.premium-notice-track {
+.premium-ticker-track {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
-  padding-left: 100%;
-  animation: premiumTicker 28s linear infinite;
+  will-change: transform;
+  animation: premiumTickerMove 45s linear infinite;
 }
 
-.premium-notice-track span {
+.premium-ticker-track span {
   display: inline-flex;
   align-items: center;
-  margin-right: 42px;
+  flex: 0 0 auto;
+  margin-right: 36px;
   color: #f8fafc;
   font-size: 0.95rem;
   font-weight: 500;
-  position: relative;
 }
 
-.premium-notice-track span::after {
+.premium-ticker-track span::after {
   content: "•";
   color: #f87171;
   margin-left: 18px;
-  font-size: 1rem;
   font-weight: 700;
 }
 
-@keyframes premiumTicker {
+@keyframes premiumTickerMove {
   0% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
-/* Hover করলে stop হবে */
-.premium-notice-marquee:hover .premium-notice-track {
+.premium-ticker:hover .premium-ticker-track {
   animation-play-state: paused;
 }
 
+/* ticker এর জন্য body content ঢেকে না যায় */
+body {
+  padding-bottom: 54px;
+}
+
 @media (max-width: 767px) {
-  .premium-notice-left {
-    padding: 10px 12px;
-    font-size: 0.82rem;
+  .premium-ticker {
+    min-height: 48px;
+  }
+
+  .premium-ticker-label {
+    min-height: 48px;
+    padding: 0 12px;
     gap: 8px;
+    font-size: 0.8rem;
   }
 
   .premium-live-dot {
@@ -424,13 +430,25 @@ body {
     height: 8px;
   }
 
-  .premium-notice-track span {
-    font-size: 0.86rem;
-    margin-right: 30px;
+  .premium-ticker-marquee {
+    height: 48px;
   }
 
-  .premium-notice-track span::after {
+  .premium-ticker-track {
+    animation-duration: 32s;
+  }
+
+  .premium-ticker-track span {
+    margin-right: 28px;
+    font-size: 0.86rem;
+  }
+
+  .premium-ticker-track span::after {
     margin-left: 12px;
+  }
+
+  body {
+    padding-bottom: 48px;
   }
 }
 }
